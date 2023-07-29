@@ -113,4 +113,164 @@ if(isset($_GET["action"]) && $_GET["action"] == "damaged-asset"){
         header("location:../../?page=inventory-info&id=". $assetID);
     }
 }
+
+if(isset($_POST["exportdata"])){
+    $datatype = mysqli_real_escape_string($conn, $_POST["datatype"]);
+    $output = '';
+    $datefrom = '';
+    $dateto = '';
+
+    if($datatype == 'assets'){
+        $query = mysqli_query($conn, "SELECT * FROM tbl_assets");
+        if(mysqli_num_rows($query) > 0){
+            $output .= "
+                <table class='table' bordered='1'>
+                    <tr>
+                        <th>ID</th>
+                        <th>ASSET NAME</th>
+                        <th>CATEGORY</th>
+                        <th>STATUS</th>
+                    </tr>
+            ";
+
+            while($row = mysqli_fetch_array($query)){
+                $output .= "
+                    <tr>
+                        <td>" . $row["ID"] . "</td>
+                        <td>" . $row["ASSET"] . "</td>
+                        <td>" . $row["CATEGORY"] . "</td>
+                        <td>" . $row["STATUS"] . "</td>
+                    </tr>
+                ";
+            }
+
+            $output .= "</table>";
+
+            header("Content-Type: application/xls");
+            header("Content-Disposition: attachment; filename=Snap-Repair_Assets.xls");
+            echo $output;
+        }
+    }
+    else if($datatype == 'inventory'){
+        $datefrom = mysqli_real_escape_string($conn, $_POST["datefrom"]);
+        $dateto = mysqli_real_escape_string($conn, $_POST["dateto"]);
+
+        $query = mysqli_query($conn, "SELECT tbl_inventory.SERIAL_NO, tbl_assets.ASSET, tbl_inventory.ASSET_NAME, tbl_inventory.PURCHASE_DATE, tbl_inventory.PURCHASE_COST, tbl_inventory.UTILIZATION, tbl_inventory.INTENSITY, tbl_inventory.STATUS FROM tbl_assets, tbl_inventory WHERE tbl_assets.ID = tbl_inventory.CATEGORY AND tbl_inventory.PURCHASE_DATE BETWEEN '$datefrom' AND '$dateto'");
+        if(mysqli_num_rows($query) > 0){
+            $output .= "
+                <table class='table' bordered='1'>
+                    <tr>
+                        <th>SERIAL_NO</th>
+                        <th>CATEGORY</th>
+                        <th>ASSET NAME</th>
+                        <th>PURCHASE DATE</th>
+                        <th>PURCHASE COST</th>
+                        <th>UTILIZATION</th>
+                        <th>INTENSITY</th>
+                        <th>STATUS</th>
+                    </tr>
+            ";
+
+            while($row = mysqli_fetch_array($query)){
+                $output .= "
+                    <tr>
+                        <td>" . $row["SERIAL_NO"] . "</td>
+                        <td>" . $row["ASSET"] . "</td>
+                        <td>" . $row["ASSET_NAME"] . "</td>
+                        <td>" . $row["PURCHASE_DATE"] . "</td>
+                        <td>" . $row["PURCHASE_COST"] . "</td>
+                        <td>" . $row["UTILIZATION"] . "</td>
+                        <td>" . $row["INTENSITY"] . "</td>
+                        <td>" . $row["STATUS"] . "</td>
+                    </tr>
+                ";
+            }
+
+            $output .= "</table>";
+
+            header("Content-Type: application/xls");
+            header("Content-Disposition: attachment; filename=Snap-Repair_Inventory.xls");
+            echo $output;
+        }
+        else{
+            $output .= "
+                <table class='table' bordered='1'>
+                    <tr>
+                        <th>SERIAL_NO</th>
+                        <th>CATEGORY</th>
+                        <th>ASSET NAME</th>
+                        <th>PURCHASE DATE</th>
+                        <th>PURCHASE COST</th>
+                        <th>UTILIZATION</th>
+                        <th>INTENSITY</th>
+                        <th>STATUS</th>
+                    </tr>
+                    <tr>
+                        <td colspan=8>No Records Found</td>
+                    </tr>
+                </table>";
+
+            header("Content-Type: application/xls");
+            header("Content-Disposition: attachment; filename=Snap-Repair_Inventory.xls");
+            echo $output;
+        }
+    }
+    else if($datatype == 'damagereports'){
+        $datefrom = mysqli_real_escape_string($conn, $_POST["datefrom"]);
+        $dateto = mysqli_real_escape_string($conn, $_POST["dateto"]);
+        $query = mysqli_query($conn, "SELECT tbl_damagereports.DAMAGE_DATE, tbl_assets.ASSET, tbl_inventory.ASSET_NAME, tbl_damagereports.DAMAGE_TYPE, tbl_damagereports.PARTS, tbl_damagereports.REPAIR_COST FROM tbl_assets, tbl_inventory, tbl_damagereports WHERE tbl_assets.ID = tbl_inventory.CATEGORY AND tbl_inventory.SERIAL_NO = tbl_damagereports.ASSET_ID AND tbl_inventory.PURCHASE_DATE BETWEEN '$datefrom' AND '$dateto' ORDER BY tbl_damagereports.DAMAGE_DATE DESC");
+        if(mysqli_num_rows($query) > 0){
+            $output .= "
+                <table class='table' bordered='1'>
+                    <tr>
+                        <th>DAMAGE DATE</th>
+                        <th>CATEGORY</th>
+                        <th>ASSET NAME</th>
+                        <th>CAUSE OF DAMAGE</th>
+                        <th>DAMAGED COMPONENT</th>
+                        <th>REPAIR COST</th>
+                    </tr>
+            ";
+
+            while($row = mysqli_fetch_array($query)){
+                $output .= "
+                    <tr>
+                        <td>" . $row["DAMAGE_DATE"] . "</td>
+                        <td>" . $row["ASSET"] . "</td>
+                        <td>" . $row["ASSET_NAME"] . "</td>
+                        <td>" . $row["DAMAGE_TYPE"] . "</td>
+                        <td>" . $row["PARTS"] . "</td>
+                        <td>PHP " . number_format($row["REPAIR_COST"], 2) . "</td>
+                    </tr>
+                ";
+            }
+
+            $output .= "</table>";
+
+            header("Content-Type: application/xlsx");
+            header("Content-Disposition: attachment; filename=Snap-Repair_DAMAGE_REPORTS.xls");
+            echo $output;
+        }
+        else{
+            $output .= "
+                <table class='table' bordered='1'>
+                    <tr>
+                        <th>DAMAGE DATE</th>
+                        <th>CATEGORY</th>
+                        <th>ASSET NAME</th>
+                        <th>CAUSE OF DAMAGE</th>
+                        <th>DAMAGED COMPONENT</th>
+                        <th>REPAIR COST</th>
+                    </tr>
+                    <tr>
+                        <td colspan=6>No Records Found</td>
+                    </tr>
+                </table>";
+
+            header("Content-Type: application/xlsx");
+            header("Content-Disposition: attachment; filename=Snap-Repair_DAMAGE_REPORTS.xls");
+            echo $output;
+        }
+    }
+}
 ?>

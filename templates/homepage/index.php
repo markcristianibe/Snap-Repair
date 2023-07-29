@@ -3,7 +3,7 @@ include("server/connection/db_connection.php");
 ?>
 <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css">
 <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/select/1.7.0/css/select.dataTables.min.css">
-
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 <link rel="stylesheet" href="templates/homepage/style.css" type="text/css">
 
 <body id="body-pd" class="body-pd">
@@ -45,6 +45,7 @@ include("server/connection/db_connection.php");
                     </a> 
                 </div>
             </div> 
+            
             <a href="#" class="nav_link" id="settings"> 
                 <i class='bx bx-cog nav_icon'></i> 
                 <span class="nav_name">Settings</span> 
