@@ -2,6 +2,16 @@
 if(isset($_POST["page"]) && $_POST["page"] == "settings"){
     include("../../server/connection/db_connection.php");
 }
+
+if(isset($_GET["import-result"])){
+    if($_GET["import-result"] == "success"){
+        ?>
+        <script>
+            alert("Data was loaded successfully");
+        </script>
+        <?php
+    }
+}
 ?>
 
 <script src="templates/settings/script.js"></script>
@@ -15,9 +25,9 @@ if(isset($_POST["page"]) && $_POST["page"] == "settings"){
         <div class="container card-container">
             <h5><b>Import Data from Excel File</b></h5>
             <hr class="bg-secondary">
-            <form action="" method="post">
+            <form action="server/queries/query.php" enctype="multipart/form-data" method="post">
                 <div class="mb-3">
-                    <input class="custom-input form-control" type="file" id="formFile">
+                    <input class="custom-input form-control" name="spreadsheet" type="file" id="formFile">
                 </div>
                 <hr class="bg-secondary">
                 <button type="submit" name="importdata" class="btn btn-success float-right">Import Excel File</button>

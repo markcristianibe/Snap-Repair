@@ -55,7 +55,19 @@ if(isset($_GET["action"]) && $_GET["action"] == "unarchive-asset"){
     }
 }
 
+
+function AutoID(){
+    include("../connection/db_connection.php");
+    $sql = mysqli_query($conn, "SELECT * FROM tbl_inventory ORDER BY SERIAL_NO DESC LIMIT 1");
+    $result = mysqli_fetch_assoc($sql);
+    $oldID = intval($result["SERIAL_NO"]);
+    $newID = $oldID + 1;
+
+    return $newID;
+}
+
 if(isset($_POST["add_asset"])){
+    $id = AutoID();
     $category = mysqli_real_escape_string($conn, $_GET["id"]);
     $assetName = mysqli_real_escape_string($conn, $_POST["asset_name"]);
     $purchaseDate = mysqli_real_escape_string($conn, $_POST["purchase_date"]);
@@ -63,13 +75,14 @@ if(isset($_POST["add_asset"])){
     $utilization = mysqli_real_escape_string($conn, $_POST["utilization"]);
     $intensity = mysqli_real_escape_string($conn, $_POST["intensity"]);
 
-    $query = mysqli_query($conn, "INSERT INTO tbl_inventory (CATEGORY, ASSET_NAME, PURCHASE_DATE, PURCHASE_COST, UTILIZATION, INTENSITY, STATUS) VALUES ('$category', '$assetName', '$purchaseDate', '$purchaseCost', '$utilization', '$intensity', 'Functional')");
+    $query = mysqli_query($conn, "INSERT INTO tbl_inventory (SERIAL_NO, CATEGORY, ASSET_NAME, PURCHASE_DATE, PURCHASE_COST, UTILIZATION, INTENSITY, STATUS) VALUES ('$id', '$category', '$assetName', '$purchaseDate', '$purchaseCost', '$utilization', '$intensity', 'Functional')");
     if($query){
         header("location:../../?page=asset-info&id=" . $category);
     }
 }
 
 if(isset($_POST["inventory_in"])){
+    $id = AutoID();
     $category = mysqli_real_escape_string($conn, $_POST["asset_type"]);
     $assetName = mysqli_real_escape_string($conn, $_POST["asset_name"]);
     $purchaseDate = mysqli_real_escape_string($conn, $_POST["purchase_date"]);
@@ -77,9 +90,12 @@ if(isset($_POST["inventory_in"])){
     $utilization = mysqli_real_escape_string($conn, $_POST["utilization"]);
     $intensity = mysqli_real_escape_string($conn, $_POST["intensity"]);
 
-    $query = mysqli_query($conn, "INSERT INTO tbl_inventory (CATEGORY, ASSET_NAME, PURCHASE_DATE, PURCHASE_COST, UTILIZATION, INTENSITY, STATUS) VALUES ('$category', '$assetName', '$purchaseDate', '$purchaseCost', '$utilization', '$intensity', 'Functional')");
+    $query = mysqli_query($conn, "INSERT INTO tbl_inventory (SERIAL_NO, CATEGORY, ASSET_NAME, PURCHASE_DATE, PURCHASE_COST, UTILIZATION, INTENSITY, STATUS) VALUES ('$id', '$category', '$assetName', '$purchaseDate', '$purchaseCost', '$utilization', '$intensity', 'Functional')");
     if($query){
-        header("location:../../?page=asset-info&id=" . $category);
+        header("location:../../?page=inventory-info&id=" . $id);
+    }
+    else{
+        echo $id;
     }
 }
 
@@ -270,6 +286,63 @@ if(isset($_POST["exportdata"])){
             header("Content-Type: application/xlsx");
             header("Content-Disposition: attachment; filename=Snap-Repair_DAMAGE_REPORTS.xls");
             echo $output;
+        }
+    }
+}
+
+require '../../vendor/autoload.php';
+
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+
+if(isset($_POST["importdata"])){
+    $filename = $_FILES['spreadsheet']['name'];
+    $file_ext = pathinfo($filename, PATHINFO_EXTENSION);
+
+    $allowed_ext = ["xls", "csv", "xlsx"];
+
+    if(in_array($file_ext, $allowed_ext)){
+        $inputFileName = $_FILES['spreadsheet']['tmp_name'];
+
+        /** Load $inputFileName to a Spreadsheet object **/
+        $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($inputFileName);
+
+        $data = $spreadsheet->getSheet(0)->toArray();
+        foreach($data as $row){
+            $assetID = GenerateAssetID();
+            $category = mysqli_real_escape_string($conn, $row['1']);
+            $asset = mysqli_real_escape_string($conn, $row['0']);
+            $status = mysqli_real_escape_string($conn, $row['2']);
+
+            $query = mysqli_query($conn, "INSERT INTO tbl_assets (ID, CATEGORY, ASSET, STATUS) VALUES ('$assetID', '$category', '$asset', '$status')");
+        }
+
+        $data = $spreadsheet->getSheet(1)->toArray();
+        foreach($data as $row){
+            $id = AutoID();
+            $category = mysqli_real_escape_string($conn, $row["0"]);
+            $assetName = mysqli_real_escape_string($conn, $row["1"]);
+            $purchaseDate = mysqli_real_escape_string($conn, $row["2"]);
+            $purchaseCost = mysqli_real_escape_string($conn, $row["3"]);
+            $utilization = mysqli_real_escape_string($conn, $row["4"]);
+            $intensity = mysqli_real_escape_string($conn, $row["5"]);
+            $status = mysqli_real_escape_string($conn, $row["6"]);
+
+            $query = mysqli_query($conn, "INSERT INTO tbl_inventory (SERIAL_NO, CATEGORY, ASSET_NAME, PURCHASE_DATE, PURCHASE_COST, UTILIZATION, INTENSITY, STATUS) VALUES ('$id', '$category', '$assetName', '$purchaseDate', '$purchaseCost', '$utilization', '$intensity', '$status')");
+        }
+
+        $data = $spreadsheet->getSheet(2)->toArray();
+        foreach($data as $row){
+            $assetID = mysqli_real_escape_string($conn, $row["0"]);
+            $damagedPart = mysqli_real_escape_string($conn, $row["3"]);
+            $damageType = mysqli_real_escape_string($conn, $row["2"]);
+            $repairCost = mysqli_real_escape_string($conn, $row["4"]);
+            $damageDate = mysqli_real_escape_string($conn, $row["1"]);
+
+            $query = mysqli_query($conn, "INSERT INTO tbl_damagereports (ASSET_ID, DAMAGE_TYPE, PARTS, REPAIR_COST, DAMAGE_DATE) VALUES ('$assetID', '$damageType', '$damagedPart', '$repairCost', '$damageDate')");
+            if($query){
+                header("location:../../?page=settings&import-result=success");
+            }    
         }
     }
 }
