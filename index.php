@@ -31,7 +31,7 @@
         include("templates/homepage/index.php");
     }
     else{
-        include("templates/homepage/index.php");
+        include("templates/sign-in/index.php");
     }
 ?>
 
