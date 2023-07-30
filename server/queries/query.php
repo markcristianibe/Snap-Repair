@@ -308,42 +308,75 @@ if(isset($_POST["importdata"])){
         $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($inputFileName);
 
         $data = $spreadsheet->getSheet(0)->toArray();
+        $assetCount = 0;
+        $index = 0;
         foreach($data as $row){
-            $assetID = GenerateAssetID();
-            $category = mysqli_real_escape_string($conn, $row['1']);
-            $asset = mysqli_real_escape_string($conn, $row['0']);
-            $status = mysqli_real_escape_string($conn, $row['2']);
+            if($index > 0){
+                $assetID = GenerateAssetID();
+                $category = mysqli_real_escape_string($conn, $row['1']);
+                $asset = mysqli_real_escape_string($conn, $row['0']);
+                $status = mysqli_real_escape_string($conn, $row['2']);
 
-            $query = mysqli_query($conn, "INSERT INTO tbl_assets (ID, CATEGORY, ASSET, STATUS) VALUES ('$assetID', '$category', '$asset', '$status')");
+                if($category != "" && $asset != "" && $status != ""){
+                    $query = mysqli_query($conn, "INSERT INTO tbl_assets (ID, CATEGORY, ASSET, STATUS) VALUES ('$assetID', '$category', '$asset', '$status')");
+                    $assetCount++;
+                }
+            }
+            else{
+                $index = 1;
+            }
+
         }
 
         $data = $spreadsheet->getSheet(1)->toArray();
+        $inventoryCount = 0;
+        $index = 0;
         foreach($data as $row){
-            $id = AutoID();
-            $category = mysqli_real_escape_string($conn, $row["0"]);
-            $assetName = mysqli_real_escape_string($conn, $row["1"]);
-            $purchaseDate = mysqli_real_escape_string($conn, $row["2"]);
-            $purchaseCost = mysqli_real_escape_string($conn, $row["3"]);
-            $utilization = mysqli_real_escape_string($conn, $row["4"]);
-            $intensity = mysqli_real_escape_string($conn, $row["5"]);
-            $status = mysqli_real_escape_string($conn, $row["6"]);
+            if($index > 0){
+                $id = AutoID();
+                $category = mysqli_real_escape_string($conn, $row["0"]);
+                $assetName = mysqli_real_escape_string($conn, $row["1"]);
+                $purchaseDate = mysqli_real_escape_string($conn, $row["2"]);
+                $purchaseCost = mysqli_real_escape_string($conn, $row["3"]);
+                $utilization = mysqli_real_escape_string($conn, $row["4"]);
+                $intensity = mysqli_real_escape_string($conn, $row["5"]);
+                $status = mysqli_real_escape_string($conn, $row["6"]);
 
-            $query = mysqli_query($conn, "INSERT INTO tbl_inventory (SERIAL_NO, CATEGORY, ASSET_NAME, PURCHASE_DATE, PURCHASE_COST, UTILIZATION, INTENSITY, STATUS) VALUES ('$id', '$category', '$assetName', '$purchaseDate', '$purchaseCost', '$utilization', '$intensity', '$status')");
+                if($category != "" && $assetName != "" && $purchaseDate != "" && $purchaseCost != "" && $utilization != "" && $intensity != "" && $status != ""){
+                    $query = mysqli_query($conn, "INSERT INTO tbl_inventory (SERIAL_NO, CATEGORY, ASSET_NAME, PURCHASE_DATE, PURCHASE_COST, UTILIZATION, INTENSITY, STATUS) VALUES ('$id', '$category', '$assetName', '$purchaseDate', '$purchaseCost', '$utilization', '$intensity', '$status')");
+                    $inventoryCount++;
+                }
+            }
+            else{
+                $index = 1;
+            }
+
         }
 
         $data = $spreadsheet->getSheet(2)->toArray();
+        $damageCount = 0;
+        $index = 0;
         foreach($data as $row){
-            $assetID = mysqli_real_escape_string($conn, $row["0"]);
-            $damagedPart = mysqli_real_escape_string($conn, $row["3"]);
-            $damageType = mysqli_real_escape_string($conn, $row["2"]);
-            $repairCost = mysqli_real_escape_string($conn, $row["4"]);
-            $damageDate = mysqli_real_escape_string($conn, $row["1"]);
+            if($index > 0){
+                $assetID = mysqli_real_escape_string($conn, $row["0"]);
+                $damagedPart = mysqli_real_escape_string($conn, $row["3"]);
+                $damageType = mysqli_real_escape_string($conn, $row["2"]);
+                $repairCost = mysqli_real_escape_string($conn, $row["4"]);
+                $damageDate = mysqli_real_escape_string($conn, $row["1"]);
 
-            $query = mysqli_query($conn, "INSERT INTO tbl_damagereports (ASSET_ID, DAMAGE_TYPE, PARTS, REPAIR_COST, DAMAGE_DATE) VALUES ('$assetID', '$damageType', '$damagedPart', '$repairCost', '$damageDate')");
-            if($query){
-                header("location:../../?page=settings&import-result=success");
-            }    
+                if($assetID != "" && $damagedPart != "" && $damageType != "" && $repairCost != "" && $damageDate != ""){
+                    $query = mysqli_query($conn, "INSERT INTO tbl_damagereports (ASSET_ID, DAMAGE_TYPE, PARTS, REPAIR_COST, DAMAGE_DATE) VALUES ('$assetID', '$damageType', '$damagedPart', '$repairCost', '$damageDate')");   
+                    $damageCount++;
+                }
+            }
+            else{
+                $index = 1;
+            }
         }
+
+        header("location:../../?page=settings&import-result=success&asset=" . $assetCount . "&inventory=" . $inventoryCount . "&damages=" . $damageCount);
+
+
     }
 }
 ?>

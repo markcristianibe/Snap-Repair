@@ -7,7 +7,8 @@ if(isset($_GET["import-result"])){
     if($_GET["import-result"] == "success"){
         ?>
         <script>
-            alert("Data was loaded successfully");
+            alert("Data was loaded successfully \n Uploaded Assets: " + <?php echo $_GET["asset"]; ?> + "\n Uploaded Inventory: " + <?php echo $_GET["inventory"]; ?>+ "\n Uploaded Damages: " + <?php echo $_GET["damages"]; ?>);
+            window.location.href = "?page=settings";
         </script>
         <?php
     }
