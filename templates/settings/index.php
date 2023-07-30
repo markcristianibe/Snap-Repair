@@ -31,6 +31,7 @@ if(isset($_GET["import-result"])){
                 </div>
                 <hr class="bg-secondary">
                 <button type="submit" name="importdata" class="btn btn-success float-right">Import Excel File</button>
+                <button type="button" onclick="window.location.href='templates/import-excel-template/Snap-Repair_Mass_Upload_Data_TEMPLATE.xlsx'" class="btn btn-success float-right mr-2">Download Template</button>
                 <br>
             </form>
         </div>
