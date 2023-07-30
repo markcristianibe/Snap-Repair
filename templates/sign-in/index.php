@@ -55,9 +55,7 @@
 						<a href="#" class="text-danger">Forgot your password?</a>
 					</div>
                     <div class="d-flex justify-content-center links">
-                        <small>
-						    Powered By <a href="https://devmarkportfolio.cf" class="ml-2 text-light">_devmark IT Solutions</a>
-                        </small>
+                        
 					</div>
 				</div>
 			</div>
