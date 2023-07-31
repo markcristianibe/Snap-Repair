@@ -118,4 +118,50 @@ $(document).ready(function() {
         });
         window.history.pushState('page2', 'Title', '?page=settings');
     });
+
+    $("#txt_email").keyup(function(){
+        var txt = $(this).val();
+        $.ajax({
+          method: 'post',
+          url: 'templates/homepage/ajax.php',
+          data: {
+              uname: $("#txt_username").val(),
+              email: txt
+          },
+          datatype: "text",
+          success: function(data){
+              $("#emailBadge").html(data);
+          }
+        });
+    })
+
+    $("#txt_username").keyup(function(){
+        var txt = $(this).val();
+        $.ajax({
+          method: 'post',
+          url: 'templates/homepage/ajax.php',
+          data: {
+              eml: $("#txt_email").val(),
+              username: txt
+          },
+          datatype: "text",
+          success: function(data){
+              $("#usernameBadge").html(data);
+          }
+        });
+    })
+    $("#txt_searchUser").keyup(function(){
+        var txt = $(this).val();
+        $.ajax({
+          method: 'post',
+          url: 'templates/homepage/ajax.php',
+          data: {
+              search_username: txt
+          },
+          datatype: "text",
+          success: function(data){
+              $("#accountlist").html(data);
+          }
+        });
+    })
   });

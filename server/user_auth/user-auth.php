@@ -1,29 +1,24 @@
 <?php
-// include("../connection/db_connection.php");
+include("../connection/db_connection.php");
 session_start();
 
 
 /* ------------------- Login ----------------- */
 if(isset($_POST["login"])){
-    $username = $_POST["username"];
-    $password = $_POST["password"];
+    $username = mysqli_real_escape_string($conn, $_POST["username"]);
+    $password = mysqli_real_escape_string($conn, $_POST["password"]);
+    $password = md5($password);
 
-    // $sql = "select * from tbl_users where USERNAME = '$username' and PASSWORD = '$password'";
-    // $result = mysqli_query($conn, $sql);
-
-    if ($username == 'admin' && $password == 'admin')
-    {
+    $query = mysqli_query($conn, "SELECT * from tbl_users where BINARY USERNAME = '$username' and PASSWORD = '$password'");
+    if(mysqli_num_rows($query) > 0){
+        $user = mysqli_fetch_assoc($query);
         $_SESSION["USERNAME"] = $username;
-                
-        // recordLog($conn, "Signed In: " . $row["Username"]);
         header("location: ../../"); 
     }
-    else
-    {
+    else{
         $_SESSION['login_error'] = "true";
         header("location: ../../"); 
     }
-    mysqli_close();
 }
 /* ------------------------------------------- */
 

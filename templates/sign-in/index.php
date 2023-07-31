@@ -15,6 +15,30 @@
 			<?php
 			unset($_SESSION["login_error"]);
 		}
+
+		if(isset($_SESSION["result"])){
+			if($_SESSION["result"] == "3"){
+				?>
+				<div class="alert alert-success" role="alert">
+					<small>
+						<strong>Your Password was Reset Successfully! </strong>Please check your email to get your new password.
+					</small>
+					<a type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" style="float: right"><i class='bx bx-x nav_icon'></i></a>
+				</div>
+				<?php
+			}
+			else if($_SESSION["result"] == "4"){
+				?>
+				<div class="alert alert-danger" role="alert">
+					<small>
+						<strong>Your email doesn't exits! </strong>Please enter a valid email address.
+					</small>
+					<a type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" style="float: right"><i class='bx bx-x nav_icon'></i></a>
+				</div>
+				<?php
+			}
+			unset($_SESSION["result"]);
+		}
 		?>
 		
 		<div class="d-flex justify-content-center h-100">
@@ -52,11 +76,30 @@
 		
 				<div class="mt-4">
 					<div class="d-flex justify-content-center links">
-						<a href="#" class="text-danger">Forgot your password?</a>
+						<a href="#" data-bs-toggle="modal" data-bs-target="#forgot_password" class="text-danger">Forgot your password?</a>
 					</div>
                     <div class="d-flex justify-content-center links">
                         
 					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="modal" tabindex="-1" id="forgot_password">
+			<div class="modal-dialog modal-sm">
+				<div class="modal-content bg-dark text-light">
+				<form action="server/queries/query.php" method="post">
+					<div class="modal-header">
+						<h5 class="modal-title">Reset Password</h5>
+						<button type="button" class="btn btn-sm btn-dark btn-close" data-bs-dismiss="modal" aria-label="Close"><i class='bx bx-x' ></i></button>
+					</div>
+					<div class="modal-body">
+						<input type="email" name="email" id="" placeholder="Enter your Email Address" class="form-control bg-dark text-light">
+					</div>
+					<div class="modal-footer">
+						<button type="submit" name="reset-password" class="btn btn-sm btn-danger">Send New Password</button>
+					</div>
+				</form>
 				</div>
 			</div>
 		</div>

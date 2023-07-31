@@ -389,4 +389,133 @@ if(isset($_POST["importdata"])){
         header("location:../../?page=settings&import-result=failed");
     }
 }
+
+function randomPassword() {
+    $alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
+    $pass = array(); //remember to declare $pass as an array
+    $alphaLength = strlen($alphabet) - 1; //put the length -1 in cache
+    for ($i = 0; $i < 10; $i++) {
+        $n = rand(0, $alphaLength);
+        $pass[] = $alphabet[$n];
+    }
+    return implode($pass); //turn the array into a string
+}
+
+if(isset($_POST["create-account"])){
+    $lastname = mysqli_real_escape_string($conn, $_POST["lastname"]);
+    $firstname = mysqli_real_escape_string($conn, $_POST["firstname"]);
+    $username = mysqli_real_escape_string($conn, $_POST["username"]);
+    $email = mysqli_real_escape_string($conn, $_POST["email"]);
+    $contact = mysqli_real_escape_string($conn, $_POST["contact"]);
+    $address = mysqli_real_escape_string($conn, $_POST["address"]);
+    $password = randomPassword();
+    $enc_password = md5($password);
+
+    $query = mysqli_query($conn, "INSERT INTO tbl_users (USERNAME, LASTNAME, FIRSTNAME, EMAIL, CONTACT_NO, HOME_ADDRESS, PASSWORD, STATUS) VALUES ('$username', '$lastname', '$firstname', '$email', '$contact', '$address', '$enc_password', 'active')");
+    if($query){
+
+        $subject = "Snap Repair New Password [System Generated]";
+        $body = "
+        <html>
+        <head>
+        <title></title>
+        </head>
+        <body>
+        ";
+        $body .= "<h2>Welcome to Snap Repair</h2>";
+        $body .= "<h3>Here is your password</h3>";
+        $body .= "<small>This is a system generated password, you can change your password upon logged-in</small><br><br><br>";
+        $body .= "<h1><strong>". $password ."</strong></h1>";
+        $body .= "
+        </body>
+        </html>
+        ";
+
+        $headers = "MIME-Version: 1.0" . "\r\n";
+        $headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
+
+        mail($email,$subject,$body, $headers);
+        header("location: ../../?result=3");
+    }
+    else{
+        mysqli_error($conn);
+    }
+}
+
+if(isset($_POST["update_account"])){
+    $lastname = mysqli_real_escape_string($conn, $_POST["lastname"]);
+    $firstname = mysqli_real_escape_string($conn, $_POST["firstname"]);
+    $username = mysqli_real_escape_string($conn, $_POST["username"]);
+    $email = mysqli_real_escape_string($conn, $_POST["email"]);
+    $contact = mysqli_real_escape_string($conn, $_POST["contact"]);
+    $address = mysqli_real_escape_string($conn, $_POST["address"]);
+    $password = mysqli_real_escape_string($conn, $_POST["password"]);
+    
+    if($password != ""){
+        $password = md5($password);
+        $query = mysqli_query($conn, "UPDATE tbl_users SET LASTNAME = '$lastname', FIRSTNAME = '$firstname', CONTACT_NO = '$contact', HOME_ADDRESS = '$address', PASSWORD = '$password' WHERE USERNAME = '$username'");
+        if($query){
+            header("location: ../../");
+        }
+    }
+    else{
+        $query = mysqli_query($conn, "UPDATE tbl_users SET LASTNAME = '$lastname', FIRSTNAME = '$firstname', CONTACT_NO = '$contact', HOME_ADDRESS = '$address' WHERE USERNAME = '$username'");
+        if($query){
+            header("location: ../../");
+        }
+    }
+}
+
+if(isset($_GET["action"]) && $_GET["action"] == 'delete-account'){
+    $id = mysqli_real_escape_string($conn, $_GET["id"]);
+
+    $query = mysqli_query($conn, "DELETE FROM tbl_users WHERE USERNAME = '$id'");
+    if($query){
+        header("location: ../../");
+    }
+    else{
+        echo mysqli_error($conn);
+    }
+}
+
+session_start();
+if(isset($_POST["reset-password"])){
+    $email = mysqli_real_escape_string($conn, $_POST["email"]);
+
+    $query = mysqli_query($conn, "SELECT * FROM tbl_users WHERE EMAIL = '$email'");
+    if(mysqli_num_rows($query) > 0){
+        $password = randomPassword();
+        $enc_password = md5($password);
+
+        mysqli_query($conn, "UPDATE tbl_users SET PASSWORD = '$password' WHERE EMAIL = '$email'");
+
+        $subject = "Snap Repair New Password [System Generated]";
+        $body = "
+        <html>
+        <head>
+        <title></title>
+        </head>
+        <body>
+        ";
+        $body .= "<h2>Welcome to Snap Repair</h2>";
+        $body .= "<h3>Here is your new password</h3>";
+        $body .= "<small>This is a system generated password, you can change your password upon logged-in</small><br><br><br>";
+        $body .= "<h1><strong>". $password ."</strong></h1>";
+        $body .= "
+        </body>
+        </html>
+        ";
+
+        $headers = "MIME-Version: 1.0" . "\r\n";
+        $headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
+
+        mail($email,$subject,$body, $headers);
+        $_SESSION["result"] = "3";
+        header("location: ../../");
+    }
+    else{
+        $_SESSION["result"] = "4";
+        header("location: ../../");
+    }
+}
 ?>
