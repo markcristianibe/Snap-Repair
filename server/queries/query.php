@@ -342,9 +342,16 @@ if(isset($_POST["importdata"])){
                 $intensity = mysqli_real_escape_string($conn, $row["5"]);
                 $status = mysqli_real_escape_string($conn, $row["6"]);
 
+                $purchaseDate = date_format(date_create(strval($purchaseDate)), "Y-m-d");
+
                 if($category != "" && $assetName != "" && $purchaseDate != "" && $purchaseCost != "" && $utilization != "" && $intensity != "" && $status != ""){
-                    $query = mysqli_query($conn, "INSERT INTO tbl_inventory (SERIAL_NO, CATEGORY, ASSET_NAME, PURCHASE_DATE, PURCHASE_COST, UTILIZATION, INTENSITY, STATUS) VALUES ('$id', '$category', '$assetName', '$purchaseDate', '$purchaseCost', '$utilization', '$intensity', '$status')");
-                    $inventoryCount++;
+                    $query = mysqli_query($conn, "SELECT * FROM tbl_assets WHERE ASSET = '$category' LIMIT 1");
+                    if(mysqli_num_rows($query) > 0){
+                        $asset = mysqli_fetch_assoc($query);
+                        $category = $asset["ID"];
+                        $query = mysqli_query($conn, "INSERT INTO tbl_inventory (SERIAL_NO, CATEGORY, ASSET_NAME, PURCHASE_DATE, PURCHASE_COST, UTILIZATION, INTENSITY, STATUS) VALUES ('$id', '$category', '$assetName', '$purchaseDate', '$purchaseCost', '$utilization', '$intensity', '$status')");
+                        $inventoryCount++;
+                    }
                 }
             }
             else{
@@ -364,6 +371,8 @@ if(isset($_POST["importdata"])){
                 $repairCost = mysqli_real_escape_string($conn, $row["4"]);
                 $damageDate = mysqli_real_escape_string($conn, $row["1"]);
 
+                $damageDate = date_format(date_create(strval($damageDate)), "Y-m-d");
+
                 if($assetID != "" && $damagedPart != "" && $damageType != "" && $repairCost != "" && $damageDate != ""){
                     $query = mysqli_query($conn, "INSERT INTO tbl_damagereports (ASSET_ID, DAMAGE_TYPE, PARTS, REPAIR_COST, DAMAGE_DATE) VALUES ('$assetID', '$damageType', '$damagedPart', '$repairCost', '$damageDate')");   
                     $damageCount++;
@@ -375,8 +384,9 @@ if(isset($_POST["importdata"])){
         }
 
         header("location:../../?page=settings&import-result=success&asset=" . $assetCount . "&inventory=" . $inventoryCount . "&damages=" . $damageCount);
-
-
+    }
+    else{
+        header("location:../../?page=settings&import-result=failed");
     }
 }
 ?>

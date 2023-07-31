@@ -18,7 +18,7 @@ if(isset($_GET["id"])){
     $lifespanPercentage;
     $fdamagedate;
     $frepaircost;
-    $fdamagecomponent = "";
+    $fdamagecomponent = "No Forecasted Data";
     $fmincomponentspan = 0;
     $totalDays = 0;
     $factorial = 0;

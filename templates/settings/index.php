@@ -12,6 +12,14 @@ if(isset($_GET["import-result"])){
         </script>
         <?php
     }
+    else if($_GET["import-result"] == "failed"){
+        ?>
+        <script>
+            alert("Data failed to load. Invalid attached file.");
+            window.location.href = "?page=settings";
+        </script>
+        <?php
+    }
 }
 ?>
 
