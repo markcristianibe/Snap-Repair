@@ -433,9 +433,13 @@ if(isset($_POST["create-account"])){
 
         $headers = "MIME-Version: 1.0" . "\r\n";
         $headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
+        
+        include("mailer.php");
+        SendEmail($email, $subject, $body);
 
-        mail($email,$subject,$body, $headers);
-        header("location: ../../?result=3");
+        // mail($email,$subject,$body, $headers);
+        $_SESSION["result"] = "3";
+        header("location: ../../");
     }
     else{
         mysqli_error($conn);
@@ -509,7 +513,10 @@ if(isset($_POST["reset-password"])){
         $headers = "MIME-Version: 1.0" . "\r\n";
         $headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
 
-        mail($email,$subject,$body, $headers);
+        include("mailer.php");
+        SendEmail($email, $subject, $body);
+
+        // mail($email,$subject,$body, $headers);
         $_SESSION["result"] = "3";
         header("location: ../../");
     }
