@@ -50,6 +50,10 @@ include("server/connection/db_connection.php");
                         <i class='bx bxs-report nav_icon'></i> 
                         <span class="nav_name">Damage Reports</span> 
                     </a> 
+                    <a href="#" class="nav_link" id="logs"> 
+                        <i class='bx bx-history nav_icon'></i>
+                        <span class="nav_name">Activity Logs</span> 
+                    </a> 
                 </div>
             </div> 
             
@@ -254,7 +258,7 @@ include("server/connection/db_connection.php");
                         $query = mysqli_query($conn, "SELECT * FROM tbl_users WHERE USERNAME = '".$_SESSION["USERNAME"]."'");
                         $user = mysqli_fetch_assoc($query);
                         ?>
-                        <input name="username" required value="<?php echo $user["USERNAME"]; ?>">
+                        <input name="username" required value="<?php echo $user["USERNAME"]; ?>" hidden>
                         <div class="row mb-2">
                             <div class="col">
                                 <small>Last Name <span class="text-danger">*</span></small>

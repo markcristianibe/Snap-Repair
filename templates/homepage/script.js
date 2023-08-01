@@ -103,6 +103,21 @@ $(document).ready(function() {
         });
         window.history.pushState('page2', 'Title', '?page=damage-reports');
     });
+
+    $('#logs').click(function(){
+        $.ajax({
+            method: 'post',
+            url: 'templates/logs/index.php',
+            data: {
+                page: "logs"
+            },
+            datatype: "text",
+            success: function(data){
+                $("#main-content").html(data);
+            }   
+        });
+        window.history.pushState('page2', 'Title', '?page=logs');
+    });
     
     $('#settings').click(function(){
         $.ajax({

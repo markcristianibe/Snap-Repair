@@ -17,6 +17,15 @@ function GenerateAssetID(){
     return $id;
 }
 
+function LogActivity($remarks){
+    session_start();
+    include("../connection/db_connection.php");
+
+    $user = $_SESSION["USERNAME"];
+
+    mysqli_query($conn, "INSERT INTO tbl_logs (USERNAME, REMARKS) VALUES ('$user', '$remarks')");
+}
+
 if(isset($_POST["create_asset"])){
     $assetID = GenerateAssetID();
     $category = mysqli_real_escape_string($conn, $_POST["asset_category"]);
@@ -24,6 +33,7 @@ if(isset($_POST["create_asset"])){
 
     $query = mysqli_query($conn, "INSERT INTO tbl_assets (ID, CATEGORY, ASSET, STATUS) VALUES ('$assetID', '$category', '$asset', 'Active')");
     if($query){
+        LogActivity("Created new asset category. [". $category . " - " . $asset . "]");
         header("location:../../?page=asset-info&id=" . $assetID);
     }
 }
@@ -34,6 +44,7 @@ if(isset($_POST["add_asset_component"])){
 
     $query = mysqli_query($conn, "INSERT INTO tbl_components (ASSET_ID, COMPONENT) VALUES ('$assetID', '$component')");
     if($query){
+        LogActivity("Added new asset component. [". $component . "]");
         header("location:../../?page=asset-info&id=" . $assetID);
     }
 }
@@ -43,6 +54,7 @@ if(isset($_GET["action"]) && $_GET["action"] == "archive-asset"){
 
     $query = mysqli_query($conn, "UPDATE tbl_assets SET STATUS = 'Archived' WHERE ID = '$assetID'");
     if($query){
+        LogActivity("Archived asset category. [". $assetID . "]");
         header("location:../../?page=assets");
     }
 }
@@ -51,6 +63,7 @@ if(isset($_GET["action"]) && $_GET["action"] == "unarchive-asset"){
 
     $query = mysqli_query($conn, "UPDATE tbl_assets SET STATUS = 'Active' WHERE ID = '$assetID'");
     if($query){
+        LogActivity("Unarchived asset category. [". $assetID . "]");
         header("location:../../?page=asset-info&id=" . $assetID);
     }
 }
@@ -77,6 +90,7 @@ if(isset($_POST["add_asset"])){
 
     $query = mysqli_query($conn, "INSERT INTO tbl_inventory (SERIAL_NO, CATEGORY, ASSET_NAME, PURCHASE_DATE, PURCHASE_COST, UTILIZATION, INTENSITY, STATUS) VALUES ('$id', '$category', '$assetName', '$purchaseDate', '$purchaseCost', '$utilization', '$intensity', 'Functional')");
     if($query){
+        LogActivity("Inventory In. [". $id . "]");
         header("location:../../?page=asset-info&id=" . $category);
     }
 }
@@ -92,6 +106,7 @@ if(isset($_POST["inventory_in"])){
 
     $query = mysqli_query($conn, "INSERT INTO tbl_inventory (SERIAL_NO, CATEGORY, ASSET_NAME, PURCHASE_DATE, PURCHASE_COST, UTILIZATION, INTENSITY, STATUS) VALUES ('$id', '$category', '$assetName', '$purchaseDate', '$purchaseCost', '$utilization', '$intensity', 'Functional')");
     if($query){
+        LogActivity("Inventory In. [". $id . "]");
         header("location:../../?page=inventory-info&id=" . $id);
     }
     else{
@@ -108,6 +123,7 @@ if(isset($_POST["report_damage"])){
 
     $query = mysqli_query($conn, "INSERT INTO tbl_damagereports (ASSET_ID, DAMAGE_TYPE, PARTS, REPAIR_COST, DAMAGE_DATE) VALUES ('$assetID', '$damageType', '$damagedPart', '$repairCost', '$damageDate')");
     if($query){
+        LogActivity("Reported asset damage. [". $id . "]");
         header("location:../../?page=damage-reports");
     }
 }
@@ -117,6 +133,7 @@ if(isset($_GET["action"]) && $_GET["action"] == "working-asset"){
 
     $query = mysqli_query($conn, "UPDATE tbl_inventory SET STATUS = 'non functional' WHERE SERIAL_NO = '$assetID'");
     if($query){
+        LogActivity("Changed asset status. [". $assetID . "] [Damaged]");
         header("location:../../?page=inventory-info&id=". $assetID);
     }
 }
@@ -126,8 +143,41 @@ if(isset($_GET["action"]) && $_GET["action"] == "damaged-asset"){
 
     $query = mysqli_query($conn, "UPDATE tbl_inventory SET STATUS = 'functional' WHERE SERIAL_NO = '$assetID'");
     if($query){
+        LogActivity("Changed asset status. [". $assetID . "] [Working]");
         header("location:../../?page=inventory-info&id=". $assetID);
     }
+}
+
+if(isset($_GET["export-log"])){
+    $output = "";
+    $query = mysqli_query($conn, "SELECT CONCAT(tbl_users.FIRSTNAME, ' ', tbl_users.LASTNAME) AS NAME, tbl_logs.TIMESTAMP, tbl_logs.REMARKS FROM tbl_users, tbl_logs WHERE tbl_users.USERNAME = tbl_logs.USERNAME ORDER BY tbl_logs.TIMESTAMP DESC");
+    if(mysqli_num_rows($query) > 0){
+        $output .= "
+            <table class='table' bordered='1'>
+                <tr>
+                    <th>TIMESTAMP</th>
+                    <th>USER NAME</th>
+                    <th>REMARKS</th>
+                </tr>
+        ";
+
+        while($row = mysqli_fetch_array($query)){
+            $output .= "
+                <tr>
+                    <td>" . $row["TIMESTAMP"] . "</td>
+                    <td>" . $row["NAME"] . "</td>
+                    <td>" . $row["REMARKS"] . "</td>
+                </tr>
+            ";
+        }
+        $output .= "</table>";
+
+        header("Content-Type: application/xls");
+        header("Content-Disposition: attachment; filename=Snap-Repair_Activity_Logs.xls");
+        echo $output;
+        LogActivity("Exported Activity Logs.");
+    }
+    // header("location: ../../?page=logs");
 }
 
 if(isset($_POST["exportdata"])){
@@ -288,6 +338,8 @@ if(isset($_POST["exportdata"])){
             echo $output;
         }
     }
+    
+    LogActivity("Exported data [". $datatype . "]");
 }
 
 require '../../vendor/autoload.php';
@@ -383,6 +435,7 @@ if(isset($_POST["importdata"])){
             }
         }
 
+        LogActivity("Imported data.");
         header("location:../../?page=settings&import-result=success&asset=" . $assetCount . "&inventory=" . $inventoryCount . "&damages=" . $damageCount);
     }
     else{
@@ -439,6 +492,7 @@ if(isset($_POST["create-account"])){
 
         // mail($email,$subject,$body, $headers);
         $_SESSION["result"] = "3";
+        LogActivity("Created new user account. [". $username . "]");
         header("location: ../../");
     }
     else{
@@ -475,6 +529,7 @@ if(isset($_GET["action"]) && $_GET["action"] == 'delete-account'){
 
     $query = mysqli_query($conn, "DELETE FROM tbl_users WHERE USERNAME = '$id'");
     if($query){
+        LogActivity("Deleted user account. [". $id . "]");
         header("location: ../../");
     }
     else{
@@ -482,8 +537,8 @@ if(isset($_GET["action"]) && $_GET["action"] == 'delete-account'){
     }
 }
 
-session_start();
 if(isset($_POST["reset-password"])){
+    session_start();
     $email = mysqli_real_escape_string($conn, $_POST["email"]);
 
     $query = mysqli_query($conn, "SELECT * FROM tbl_users WHERE EMAIL = '$email'");
