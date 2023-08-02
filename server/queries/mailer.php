@@ -23,7 +23,7 @@ function SendEmail($to, $subject, $body){
      
         //Recipients
         $mail->setFrom('markcristianibe@gmail.com', 'Snap-Repair');
-        $mail->addAddress($to, 'Makr Cristian');     // Add a recipient
+        $mail->addAddress($to);     // Add a recipient
         // $mail->addAddress('recipient2@example.com');               // Name is optional
         // $mail->addReplyTo('info@example.com', 'Information');
         // $mail->addCC('cc@example.com');
